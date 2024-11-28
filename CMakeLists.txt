@@ -25,6 +25,8 @@ add_executable(${PROJECT_NAME}
 	#test fiels with new mothods fro loading 3d models
 	src/graphics/new_mesh_type.h
 	src/graphics/model.h
+
+	tutorial_descriptions/main_description.txt
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)

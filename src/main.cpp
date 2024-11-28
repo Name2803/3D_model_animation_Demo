@@ -1,4 +1,4 @@
-#include <glad/glad.h>b
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 //------glm-------
 #include <glm/glm.hpp>
