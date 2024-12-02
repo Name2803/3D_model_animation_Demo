@@ -26,6 +26,7 @@ unsigned int TextureFromFile(const char* path, const string& directory, bool gam
 class Model
 {
 public:
+    int tmp = 0;
     // model data 
     vector<Texture> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
     vector<Mesh>    meshes;
@@ -145,6 +146,12 @@ private:
         }
         // process materials
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+        std::cout << ++tmp << "\t" << mesh->mName.data << "\t" << mesh->mMaterialIndex << "\t" << scene->mMaterials[mesh->mMaterialIndex]->GetName().data <<
+            
+            "\t" << scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE) << "\n"
+            "\t" << scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_SPECULAR) <<
+            "\t" << scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_HEIGHT) <<
+            "\t" << scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_AMBIENT);
         // we assume a convention for sampler names in the shaders. Each diffuse texture should be named
         // as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
         // Same applies to other texture as the following list summarizes:
@@ -178,6 +185,7 @@ private:
         {
             aiString str;
             mat->GetTexture(type, i, &str);
+            std::cout << str.data << "\n";
             // check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
             bool skip = false;
             for (unsigned int j = 0; j < textures_loaded.size(); j++)

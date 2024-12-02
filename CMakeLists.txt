@@ -26,7 +26,7 @@ add_executable(${PROJECT_NAME}
 	src/graphics/new_mesh_type.h
 	src/graphics/model.h
 
-	tutorial_descriptions/main_description.txt
+	disassemblade_code/disassemblade_code.txt
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
