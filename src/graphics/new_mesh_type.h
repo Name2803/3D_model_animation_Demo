@@ -55,6 +55,10 @@ public:
         // now that we have all the required data, set the vertex buffers and its attribute pointers.
         setupMesh();
     }
+    Mesh(Vertex* vertices, unsigned int* indices, Texture* textures)
+    {
+        
+    }
 
     // render the mesh
     void Draw(Shader &shader) 

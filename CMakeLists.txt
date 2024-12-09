@@ -26,6 +26,9 @@ add_executable(${PROJECT_NAME}
 	src/graphics/new_mesh_type.h
 	src/graphics/model.h
 
+	src/graphics/main_model.h
+	src/graphics/main_model.cpp
+
 	disassemblade_code/disassemblade_code.txt
 )
 
