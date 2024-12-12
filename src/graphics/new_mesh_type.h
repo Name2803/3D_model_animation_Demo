@@ -40,24 +40,31 @@ struct Texture {
 class Mesh {
 public:
     // mesh Data
-    vector<Vertex>       vertices;
-    vector<unsigned int> indices;
-    vector<Texture>      textures;
+    Vertex*       vertices;
+    unsigned int* indices;
+    Texture*      textures;
+    int texture_amount;
     unsigned int VAO;
 
-    // constructor
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
+
+
+    //// constructor
+    //Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
+    //{
+    //    this->vertices = vertices;
+    //    this->indices = indices;
+    //    this->textures = textures;
+
+    //    // now that we have all the required data, set the vertex buffers and its attribute pointers.
+    //    
+    //}
+    Mesh(Vertex* vertices, unsigned int* indices, Texture* textures, int texture_amount)
     {
         this->vertices = vertices;
         this->indices = indices;
         this->textures = textures;
-
-        // now that we have all the required data, set the vertex buffers and its attribute pointers.
+        this->texture_amount = texture_amount;
         setupMesh();
-    }
-    Mesh(Vertex* vertices, unsigned int* indices, Texture* textures)
-    {
-        
     }
 
     // render the mesh
@@ -68,7 +75,7 @@ public:
         unsigned int specularNr = 1;
         unsigned int normalNr   = 1;
         unsigned int heightNr   = 1;
-        for(unsigned int i = 0; i < textures.size(); i++)
+        for(unsigned int i = 0; i < texture_amount; i++)
         {
             glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
             // retrieve texture number (the N in diffuse_textureN)
@@ -91,7 +98,7 @@ public:
         
         // draw mesh
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
         // always good practice to set everything back to defaults once configured.
@@ -119,7 +126,7 @@ private:
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);  
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
         // set the vertex attribute pointers
         // vertex Positions

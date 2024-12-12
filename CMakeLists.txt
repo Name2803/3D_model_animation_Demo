@@ -24,7 +24,7 @@ add_executable(${PROJECT_NAME}
 
 	#test fiels with new mothods fro loading 3d models
 	src/graphics/new_mesh_type.h
-	src/graphics/model.h
+	#src/graphics/model.h
 
 	src/graphics/main_model.h
 	src/graphics/main_model.cpp

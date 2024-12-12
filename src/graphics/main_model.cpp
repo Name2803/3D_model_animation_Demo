@@ -2,8 +2,7 @@
 
 #include "new_mesh_type.h"
 
-MainModel::MainModel(std::string path):
-    f_path(path)
+MainModel::MainModel(std::string path)
 {
 	stbi_set_flip_vertically_on_load(true);
 	loadModel(path);
@@ -20,8 +19,8 @@ void MainModel::loadModel(std::string path)
         std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
         return;
     }
-
     f_path = path.substr(0, path.find_last_of('/'));
+    
 
     meshes = new Mesh*[scene->mNumMeshes];
     processNode(scene->mRootNode, scene);
@@ -48,7 +47,7 @@ Mesh MainModel::processMesh(aiMesh* mesh, const aiScene* scene)
     unsigned int* indices;
     Texture* textures;
 
-    for (int i = 0; i < mesh->mNumVertices; i++)
+    for (int i = 0; i < mesh->mNumVertices; ++i)
     {
         // vertices
         vertices[i].Position.x = mesh->mVertices[i].x;
@@ -82,14 +81,14 @@ Mesh MainModel::processMesh(aiMesh* mesh, const aiScene* scene)
             vertices[i].TexCoords = glm::vec2(0.0f, 0.0f);
     }
 
-    int tmp = 0;
+    int num_of_indc = 0;
     for (int i = 0; i < mesh->mNumFaces; i++)
     {
-        tmp += mesh->mFaces[i].mNumIndices;
+        num_of_indc += mesh->mFaces[i].mNumIndices;
     }
 
-    indices = new unsigned int[tmp];
-    tmp = 0;
+    indices = new unsigned int[num_of_indc];
+    int tmp = 0;
     for (unsigned int i = 0; i < mesh->mNumFaces; ++i)
     {
         for (unsigned int j = 0; j < mesh->mFaces[i].mNumIndices; ++j, ++tmp)
@@ -102,42 +101,73 @@ Mesh MainModel::processMesh(aiMesh* mesh, const aiScene* scene)
     for (int i = 0; i < scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE); ++i, ++tmp) {}
     for (int i = 0; i < scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE); ++i, ++tmp) {}
     for (int i = 0; i < scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE); ++i, ++tmp) {}*/
-
-    int tmp1 = loadMatirialTexture(textures, scene->mMaterials[mesh->mMaterialIndex], aiTextureType_DIFFUSE, "texture_diffuse");
-    int tmp2 = loadMatirialTexture(textures + tmp1, scene->mMaterials[mesh->mMaterialIndex], aiTextureType_SPECULAR, "texture_specular");
-    int tmp3 = loadMatirialTexture(textures + tmp1 + tmp2, scene->mMaterials[mesh->mMaterialIndex], aiTextureType_HEIGHT, "texture_normal");
-    loadMatirialTexture(textures + tmp1 + tmp2 + tmp3, scene->mMaterials[mesh->mMaterialIndex], aiTextureType_AMBIENT, "texture_height");
-    return Mesh(vertices, indices, textures);
+    int texture_amount = 0;
+    loadMatirialTexture(textures, scene->mMaterials[mesh->mMaterialIndex], aiTextureType_DIFFUSE, "texture_diffuse", texture_amount);
+    loadMatirialTexture(textures, scene->mMaterials[mesh->mMaterialIndex], aiTextureType_SPECULAR, "texture_specular", texture_amount);
+    loadMatirialTexture(textures, scene->mMaterials[mesh->mMaterialIndex], aiTextureType_HEIGHT, "texture_normal", texture_amount);
+    loadMatirialTexture(textures, scene->mMaterials[mesh->mMaterialIndex], aiTextureType_AMBIENT, "texture_height", texture_amount);
+    return Mesh(vertices, indices, textures, texture_amount);
 
 }
 
-int loadMatirialTexture(Texture* textures, aiMaterial* mat, aiTextureType type, std::string typeName)
+void MainModel::loadMatirialTexture(Texture* textures, aiMaterial* mat, aiTextureType type, std::string typeName, int texture_amount)
 {
-    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+
+    for (unsigned int i = 0; i < mat->GetTextureCount(type); ++i)
     {
         aiString str;
         mat->GetTexture(type, i, &str);
-        std::cout << str.data << "\n";
-        // check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
-        bool skip = false;
-        for (unsigned int j = 0; j < textures_loaded.size(); j++)
+        for (unsigned int j = 0; j <= texture_amount; ++j)
         {
-            if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
+            if (std::strcmp(textures[j].path.data(), str.C_Str()) == 0)
             {
-                textures.push_back(textures_loaded[j]);
-                skip = true; // a texture with the same filepath has already been loaded, continue to next one. (optimization)
+                ++texture_amount;
+                textures[texture_amount].id = TextureFromFile(str.C_Str(), this->f_path);
+                textures[texture_amount].type = typeName;
+                textures[texture_amount].path = str.C_Str();
                 break;
             }
         }
-        if (!skip)
-        {   // if texture hasn't been loaded already, load it
-            Texture texture;
-            texture.id = TextureFromFile(str.C_Str(), this->directory);
-            texture.type = typeName;
-            texture.path = str.C_Str();
-            textures.push_back(texture);
-            textures_loaded.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecessary load duplicate textures.
-        }
+    }   
+}
+
+
+unsigned int MainModel::TextureFromFile(const char* path, const std::string& directory, bool gamma = false)
+{
+    std::string filename = std::string(path);
+    filename = directory + '/' + filename;
+
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
     }
-    return textures;
+    else
+    {
+        std::cout << "Texture failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
 }
