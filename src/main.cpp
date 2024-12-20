@@ -39,7 +39,7 @@ int main(void)
     float camX = 0.0f;
     float camY = 0.0f;
 
-    Model test_backpack_model("../res/ford_gt40/ford_gt40.obj");
+    Model test_backpack_model("../res/jet_model/jet_model.obj");
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);

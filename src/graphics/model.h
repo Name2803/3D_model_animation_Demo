@@ -147,7 +147,7 @@ private:
         // process materials
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
         std::cout << ++tmp << "\t" << mesh->mName.data << "\t" << mesh->mMaterialIndex << "\t" << scene->mMaterials[mesh->mMaterialIndex]->GetName().data <<
-            
+
             "\t" << scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE) << "\n"
             "\t" << scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_SPECULAR) <<
             "\t" << scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_HEIGHT) <<
