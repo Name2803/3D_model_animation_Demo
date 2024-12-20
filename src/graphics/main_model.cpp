@@ -1,6 +1,5 @@
 #include "main_model.h"
-
-#include "new_mesh_type.h"
+#include "basic_file_mesh.h"
 
 MainModel::MainModel(std::string path)
 {
@@ -22,7 +21,9 @@ void MainModel::loadModel(std::string path)
     f_path = path.substr(0, path.find_last_of('/'));
     
 
-    meshes = new Mesh*[scene->mNumMeshes];
+    meshes = new BFMesh*[scene->mNumMeshes];
+    textures_loaded = new Texture[scene->mNumTextures];
+
     processNode(scene->mRootNode, scene);
 }
 
@@ -41,12 +42,14 @@ void MainModel::processNode(aiNode* node, const aiScene* scene, unsigned int poi
 }
 
 
-Mesh MainModel::processMesh(aiMesh* mesh, const aiScene* scene)
+BFMesh MainModel::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     Vertex* vertices = new Vertex[mesh->mNumVertices];
-    unsigned int* indices;
+    unsigned int* indeces;
     Texture* textures;
 
+    int* counts = new int[2];
+    counts[0] = mesh->mNumVertices;
     for (int i = 0; i < mesh->mNumVertices; ++i)
     {
         // vertices
@@ -87,44 +90,39 @@ Mesh MainModel::processMesh(aiMesh* mesh, const aiScene* scene)
         num_of_indc += mesh->mFaces[i].mNumIndices;
     }
 
-    indices = new unsigned int[num_of_indc];
+    indeces = new unsigned int[num_of_indc];
     int tmp = 0;
     for (unsigned int i = 0; i < mesh->mNumFaces; ++i)
     {
         for (unsigned int j = 0; j < mesh->mFaces[i].mNumIndices; ++j, ++tmp)
-            indices[tmp]= mesh->mFaces[i].mIndices[j];
+            indeces[tmp]= mesh->mFaces[i].mIndices[j];
     }
 
     tmp = 0;
-    textures = new Texture[scene->mNumMaterials];
-    /*for (int i = 0; i < scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE); ++i, ++tmp) {}
-    for (int i = 0; i < scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE); ++i, ++tmp) {}
-    for (int i = 0; i < scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE); ++i, ++tmp) {}
-    for (int i = 0; i < scene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE); ++i, ++tmp) {}*/
-    int texture_amount = 0;
-    loadMatirialTexture(textures, scene->mMaterials[mesh->mMaterialIndex], aiTextureType_DIFFUSE, "texture_diffuse", texture_amount);
-    loadMatirialTexture(textures, scene->mMaterials[mesh->mMaterialIndex], aiTextureType_SPECULAR, "texture_specular", texture_amount);
-    loadMatirialTexture(textures, scene->mMaterials[mesh->mMaterialIndex], aiTextureType_HEIGHT, "texture_normal", texture_amount);
-    loadMatirialTexture(textures, scene->mMaterials[mesh->mMaterialIndex], aiTextureType_AMBIENT, "texture_height", texture_amount);
-    return Mesh(vertices, indices, textures, texture_amount);
+    
+    counts[1] = 0;
+    loadMatirialTexture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_DIFFUSE, "texture_diffuse", counts[1]);
+    loadMatirialTexture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_SPECULAR, "texture_specular", counts[1]);
+    loadMatirialTexture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_HEIGHT, "texture_normal", counts[1]);
+    loadMatirialTexture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_AMBIENT, "texture_height", counts[1]);
+    return BFMesh(vertices, textures_loaded, indeces, counts);
 
 }
 
-void MainModel::loadMatirialTexture(Texture* textures, aiMaterial* mat, aiTextureType type, std::string typeName, int texture_amount)
-{
-
+void MainModel::loadMatirialTexture(aiMaterial* mat, aiTextureType type, std::string typeName, int texture_amount)
+{    
     for (unsigned int i = 0; i < mat->GetTextureCount(type); ++i)
     {
         aiString str;
         mat->GetTexture(type, i, &str);
         for (unsigned int j = 0; j <= texture_amount; ++j)
         {
-            if (std::strcmp(textures[j].path.data(), str.C_Str()) == 0)
+            if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
             {
                 ++texture_amount;
-                textures[texture_amount].id = TextureFromFile(str.C_Str(), this->f_path);
-                textures[texture_amount].type = typeName;
-                textures[texture_amount].path = str.C_Str();
+                textures_loaded[texture_amount].id = TextureFromFile(str.C_Str(), this->f_path);
+                textures_loaded[texture_amount].type = typeName;
+                textures_loaded[texture_amount].path = str.C_Str();
                 break;
             }
         }
@@ -132,7 +130,7 @@ void MainModel::loadMatirialTexture(Texture* textures, aiMaterial* mat, aiTextur
 }
 
 
-unsigned int MainModel::TextureFromFile(const char* path, const std::string& directory, bool gamma = false)
+unsigned int MainModel::TextureFromFile(const char* path, const std::string& directory)
 {
     std::string filename = std::string(path);
     filename = directory + '/' + filename;
@@ -140,16 +138,16 @@ unsigned int MainModel::TextureFromFile(const char* path, const std::string& dir
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
-    int width, height, nrComponents;
-    unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+    int width, height, chanels;
+    unsigned char* data = stbi_load(filename.c_str(), &width, &height, &chanels, 0);
     if (data)
     {
         GLenum format;
-        if (nrComponents == 1)
+        if (chanels == 1)
             format = GL_RED;
-        else if (nrComponents == 3)
+        else if (chanels == 3)
             format = GL_RGB;
-        else if (nrComponents == 4)
+        else if (chanels == 4)
             format = GL_RGBA;
 
         glBindTexture(GL_TEXTURE_2D, textureID);

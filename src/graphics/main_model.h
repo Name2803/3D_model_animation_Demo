@@ -14,14 +14,15 @@
 #include <iostream>
 #include <string>
 
-class Mesh;
+class BFMesh;
+class Texture;
 
 class MainModel
 {
 public:
 
-	//vector<Texture> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
-	Mesh** meshes;
+	Texture* textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
+	BFMesh** meshes;
 	bool gammaCorrection;
 
 	MainModel(std::string path);
@@ -34,8 +35,8 @@ private:
 
 	void loadModel(std::string path);
 	void processNode(aiNode* node, const aiScene* scene, unsigned int point = 0);
-	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-	void loadMatirialTexture(Texture* textures, aiMaterial* mat, aiTextureType type, std::string typeName, int texture_amount);
-	unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma);
+	BFMesh processMesh(aiMesh* mesh, const aiScene* scene);
+	void loadMatirialTexture(aiMaterial* mat, aiTextureType type, std::string typeName, int texture_amount);
+	unsigned int TextureFromFile(const char* path, const std::string& directory);
 };
 

@@ -28,6 +28,8 @@ add_executable(${PROJECT_NAME}
 
 	src/graphics/main_model.h
 	src/graphics/main_model.cpp
+	src/graphics/basic_file_mesh.h
+	src/graphics/basic_file_Mesh.cpp
 
 	disassemblade_code/disassemblade_code.txt
 )
