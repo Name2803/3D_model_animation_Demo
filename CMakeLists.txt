@@ -29,29 +29,28 @@ add_executable(${PROJECT_NAME}
 	src/graphics/main_model.h
 	src/graphics/main_model.cpp
 	src/graphics/basic_file_mesh.h
-	src/graphics/basic_file_Mesh.cpp
+	src/graphics/basic_file_mesh.cpp
 
 	disassemblade_code/disassemblade_code.txt
 )
 
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+# Подключение внешних библиотек - ПЕРЕМЕЩЕНО ВВЕРХ
+add_subdirectory(external/glfw)
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_BINARY_DIR}/external/glad/include")
+add_subdirectory(external/glad)
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_BINARY_DIR}/external/glad/include")
+add_subdirectory(external/glm)
+add_subdirectory(external/assimp)
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_BINARY_DIR}/external/glad/include")
 
+
+# Подключение библиотек - теперь после add_subdirectory
+target_link_libraries(${PROJECT_NAME} glfw glad glm assimp)
+
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+
+# Опции для GLFW - рекомендуется оставить, даже если не используются примеры и тесты
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
-
-
-add_subdirectory(external/glfw)
-target_link_libraries(${PROJECT_NAME} glfw)
-
-add_subdirectory(external/glad)
-target_link_libraries(${PROJECT_NAME} glad)
-
-add_subdirectory(external/glm)
-target_link_libraries(${PROJECT_NAME} glm)
-
-add_subdirectory(external/assimp)
-target_link_libraries(${PROJECT_NAME} assimp)
-
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})

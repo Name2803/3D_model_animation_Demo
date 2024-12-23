@@ -32,13 +32,18 @@ struct Texture {
 class BFMesh
 {
 public:
+    unsigned int VAO;
+
     BFMesh(Vertex* vertices_, Texture* textures_, unsigned int* indeces_,int* counts_);
     ~BFMesh();
 
     void draw(Shader shader);
 private:
+    unsigned int EBO, VBO;
     Vertex* vertices;
     Texture* textures;
     unsigned int* indeces;
     int* counts;
+    void setup_mesh();
+
 };
