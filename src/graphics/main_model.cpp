@@ -32,7 +32,7 @@ void MainModel::processNode(aiNode* node, const aiScene* scene, unsigned int poi
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes[i + point] = &processMesh(mesh, scene);
+        processMesh(meshes[i + point], mesh, scene);
     }
     
     for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -42,7 +42,7 @@ void MainModel::processNode(aiNode* node, const aiScene* scene, unsigned int poi
 }
 
 
-BFMesh MainModel::processMesh(aiMesh* mesh, const aiScene* scene)
+void MainModel::processMesh(BFMesh* bfmesh, aiMesh* mesh, const aiScene* scene)
 {
     Vertex* vertices = new Vertex[mesh->mNumVertices];
     unsigned int* indeces;
@@ -105,8 +105,7 @@ BFMesh MainModel::processMesh(aiMesh* mesh, const aiScene* scene)
     loadMatirialTexture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_SPECULAR, "texture_specular", counts[1]);
     loadMatirialTexture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_HEIGHT, "texture_normal", counts[1]);
     loadMatirialTexture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_AMBIENT, "texture_height", counts[1]);
-    return BFMesh(vertices, textures_loaded, indeces, counts);
-
+    bfmesh = new BFMesh(vertices, textures_loaded, indeces, counts);
 }
 
 void MainModel::loadMatirialTexture(aiMaterial* mat, aiTextureType type, std::string typeName, int texture_amount)

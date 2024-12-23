@@ -1,5 +1,5 @@
 #pragma once
-#include "Window.h"
+#include "window.h"
 
 typedef unsigned int uint;
 
