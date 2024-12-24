@@ -12,7 +12,7 @@
 #include "window/events.h"
 #include "window/Camera.h"
 #include "graphics/ShaderCl.h"
-#include "graphics/model.h"
+#include "graphics/main_model.h"
 
 
 float vertices[] =
@@ -39,7 +39,7 @@ int main(void)
     float camX = 0.0f;
     float camY = 0.0f;
 
-    Model test_backpack_model("../res/jet_model/jet_model.obj");
+    MainModel test_backpack_model("../res/jet_model/jet_model.obj");
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
@@ -112,7 +112,7 @@ int main(void)
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
         test_backpack_shader.setMat4("model", model);
 
-        test_backpack_model.Draw(test_backpack_shader);
+        test_backpack_model.draw(test_backpack_shader);
 
         /*glm::mat4 model = glm::mat4(1.0f);
         model = translate(model, glm::vec3(0.f, 1.f, -10.f));
