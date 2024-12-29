@@ -7,6 +7,7 @@ BFMesh::BFMesh(Vertex* vertices_, Texture* textures_, unsigned int* indeces_,int
 	textures = textures_;
 	indeces = indeces_;
 	counts = counts_;
+    
     setup_mesh();
 }
 
@@ -20,6 +21,7 @@ BFMesh::~BFMesh()
 
 void BFMesh::draw(Shader shader)
 {
+    std::cout << "counts = " << "\n";
     // bind appropriate textures
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
