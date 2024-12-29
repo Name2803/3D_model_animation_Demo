@@ -7,12 +7,24 @@ MainModel::MainModel(std::string path)
 	loadModel(path);
 }
 
+MainModel::~MainModel()
+{
+    delete[] meshes;
+    delete[] textures_loaded;
+}
+
+void MainModel::draw(Shader& shader)
+{
+    for (int i = 0; i < mesh_count; ++i)
+        meshes[i]->draw(shader);
+}
+
 
 
 void MainModel::loadModel(std::string path)
 {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(f_path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
     {
         std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
@@ -22,13 +34,14 @@ void MainModel::loadModel(std::string path)
     
 
     meshes = new BFMesh*[scene->mNumMeshes];
-    textures_loaded = new Texture[scene->mNumTextures];
+    textures_loaded = new Texture[scene->mNumMaterials];
 
     processNode(scene->mRootNode, scene);
 }
 
 void MainModel::processNode(aiNode* node, const aiScene* scene, unsigned int point)
 {
+    mesh_count = node->mNumMeshes;
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
@@ -48,7 +61,7 @@ void MainModel::processMesh(BFMesh* bfmesh, aiMesh* mesh, const aiScene* scene)
     unsigned int* indeces;
     Texture* textures;
 
-    int* counts = new int[2];
+    int* counts = new int[3];
     counts[0] = mesh->mNumVertices;
     for (int i = 0; i < mesh->mNumVertices; ++i)
     {
@@ -84,13 +97,13 @@ void MainModel::processMesh(BFMesh* bfmesh, aiMesh* mesh, const aiScene* scene)
             vertices[i].TexCoords = glm::vec2(0.0f, 0.0f);
     }
 
-    int num_of_indc = 0;
+    counts[1] = 0;
     for (int i = 0; i < mesh->mNumFaces; i++)
     {
-        num_of_indc += mesh->mFaces[i].mNumIndices;
+        counts[1] += static_cast<int>(mesh->mFaces[i].mNumIndices);
     }
 
-    indeces = new unsigned int[num_of_indc];
+    indeces = new unsigned int[counts[1]];
     int tmp = 0;
     for (unsigned int i = 0; i < mesh->mNumFaces; ++i)
     {
@@ -98,34 +111,41 @@ void MainModel::processMesh(BFMesh* bfmesh, aiMesh* mesh, const aiScene* scene)
             indeces[tmp]= mesh->mFaces[i].mIndices[j];
     }
 
-    tmp = 0;
     
-    counts[1] = 0;
-    loadMatirialTexture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_DIFFUSE, "texture_diffuse", counts[1]);
-    loadMatirialTexture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_SPECULAR, "texture_specular", counts[1]);
-    loadMatirialTexture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_HEIGHT, "texture_normal", counts[1]);
-    loadMatirialTexture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_AMBIENT, "texture_height", counts[1]);
+    counts[2] = 0;
+    load_matirial_texture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_DIFFUSE, "texture_diffuse", &counts[2]);
+    load_matirial_texture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_SPECULAR, "texture_specular", &counts[2]);
+    load_matirial_texture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_HEIGHT, "texture_normal", &counts[2]);
+    load_matirial_texture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_AMBIENT, "texture_height", &counts[2]);
     bfmesh = new BFMesh(vertices, textures_loaded, indeces, counts);
 }
 
-void MainModel::loadMatirialTexture(aiMaterial* mat, aiTextureType type, std::string typeName, int texture_amount)
-{    
+void MainModel::load_matirial_texture(aiMaterial* mat, aiTextureType type, std::string typeName, int* texture_amount)
+{
     for (unsigned int i = 0; i < mat->GetTextureCount(type); ++i)
     {
         aiString str;
         mat->GetTexture(type, i, &str);
-        for (unsigned int j = 0; j <= texture_amount; ++j)
+
+        bool skip = false;
+        for (unsigned int j = 0; j < *texture_amount; ++j)
         {
-            if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
+            if (strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
             {
-                ++texture_amount;
-                textures_loaded[texture_amount].id = TextureFromFile(str.C_Str(), this->f_path);
-                textures_loaded[texture_amount].type = typeName;
-                textures_loaded[texture_amount].path = str.C_Str();
+                skip = true;
                 break;
             }
         }
-    }   
+
+        if (!skip)
+        {
+            textures_loaded[*texture_amount].id = TextureFromFile(str.C_Str(), this->f_path);
+            textures_loaded[*texture_amount].type = typeName.c_str();
+            textures_loaded[*texture_amount].path = str.C_Str();
+            ++(*texture_amount);
+            std::cout << "texture_amount: " << *texture_amount << "\n";
+        }
+    }
 }
 
 

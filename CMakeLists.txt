@@ -23,7 +23,7 @@ add_executable(${PROJECT_NAME}
 
 
 	#test fiels with new mothods fro loading 3d models
-	src/graphics/new_mesh_type.h
+	#src/graphics/new_mesh_type.h
 	#src/graphics/model.h
 
 	src/graphics/main_model.h
@@ -33,7 +33,7 @@ add_executable(${PROJECT_NAME}
 
 	disassemblade_code/disassemblade_code.txt
 )
-
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 # Подключение внешних библиотек - ПЕРЕМЕЩЕНО ВВЕРХ
 add_subdirectory(external/glfw)
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_BINARY_DIR}/external/glad/include")

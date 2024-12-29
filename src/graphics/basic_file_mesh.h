@@ -34,7 +34,7 @@ class BFMesh
 public:
     unsigned int VAO;
 
-    BFMesh(Vertex* vertices_, Texture* textures_, unsigned int* indeces_,int* counts_);
+    BFMesh(Vertex* vertices_, Texture* textures_, unsigned int* indeces_, int* counts_);
     ~BFMesh();
 
     void draw(Shader shader);

@@ -16,6 +16,7 @@
 
 class BFMesh;
 class Texture;
+class Shader;
 
 class MainModel
 {
@@ -28,15 +29,15 @@ public:
 	MainModel(std::string path);
 	~MainModel();
 
-	void draw();
+	void draw(Shader& shader);
 
 private:
 	std::string f_path;
-
+	int mesh_count;
 	void loadModel(std::string path);
 	void processNode(aiNode* node, const aiScene* scene, unsigned int point = 0);
 	void processMesh(BFMesh* bfmesh, aiMesh* mesh, const aiScene* scene);
-	void loadMatirialTexture(aiMaterial* mat, aiTextureType type, std::string typeName, int texture_amount);
+	void load_matirial_texture(aiMaterial* mat, aiTextureType type, std::string typeName, int* texture_amount);
 	unsigned int TextureFromFile(const char* path, const std::string& directory);
 };
 
