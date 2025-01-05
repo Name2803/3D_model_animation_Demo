@@ -6,7 +6,6 @@ MainModel::MainModel(std::string path, bool set_texture_flip)
     
 	stbi_set_flip_vertically_on_load(set_texture_flip);
 	loadModel(path);
-    mesh_count = 0;
 }
 
 MainModel::~MainModel()
@@ -19,7 +18,6 @@ void MainModel::draw(Shader& shader)
 {
     
     for (int i = 0; i < mesh_count; ++i)
-        //meshes[i]->printer();
         meshes[i]->draw(shader);
 }
 
@@ -36,8 +34,8 @@ void MainModel::loadModel(std::string path)
     }
     f_path = path.substr(0, path.find_last_of('/'));
     
-    countMeshes(scene->mRootNode, mesh_count);
-
+    mesh_count = 0;
+    count_meshes(scene->mRootNode);
     meshes = new BFMesh*[mesh_count];
     textures_loaded = new Texture[scene->mNumMaterials];
 
@@ -195,12 +193,12 @@ unsigned int MainModel::TextureFromFile(const char* path, const std::string& dir
     return textureID;
 }
 
-void MainModel::countMeshes(const aiNode* node, int& meshCount)
+void MainModel::count_meshes(const aiNode* node)
 {
     if (node->mNumMeshes > 0) {
-        meshCount += node->mNumMeshes;
+        mesh_count += node->mNumMeshes;
     }
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {
-        countMeshes(node->mChildren[i], meshCount);
+        count_meshes(node->mChildren[i]);
     }
 }

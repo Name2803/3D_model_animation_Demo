@@ -41,6 +41,6 @@ private:
 	void load_matirial_texture(aiMaterial* mat, aiTextureType type, std::string typeName, int* texture_amount);
 	unsigned int TextureFromFile(const char* path, const std::string& directory);
 	// Рекурсивная функция для подсчета мешей
-	void countMeshes(const aiNode* node, int& meshCount);
+	void count_meshes(const aiNode* node);
 };
 
