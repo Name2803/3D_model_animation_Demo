@@ -38,12 +38,12 @@ public:
     ~BFMesh();
 
     void draw(Shader shader);
-private:
     unsigned int EBO, VBO;
     Vertex* vertices;
     Texture* textures;
     unsigned int* indeces;
     int* counts;
+private:
     void setup_mesh();
 
 };

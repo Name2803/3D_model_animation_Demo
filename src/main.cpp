@@ -39,7 +39,7 @@ int main(void)
     float camX = 0.0f;
     float camY = 0.0f;
 
-    MainModel test_backpack_model("../res/jet_model/jet_model.obj");
+    MainModel test_backpack_model("../res/Survival_BackPack/Survival_BackPack_2.fbx");
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
