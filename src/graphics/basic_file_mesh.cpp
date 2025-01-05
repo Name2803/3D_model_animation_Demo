@@ -1,13 +1,12 @@
 #include "basic_file_mesh.h"
 
 
-BFMesh::BFMesh(Vertex* vertices_, Texture* textures_, unsigned int* indeces_,int* counts_)
-{
-	vertices = vertices_;
-	textures = textures_;
-	indeces = indeces_;
-	counts = counts_;
-    
+BFMesh::BFMesh(Vertex* vertices_, Texture* textures_, unsigned int* indeces_,int* counts_):
+    vertices(vertices_),
+    textures(textures_),
+    indeces(indeces_),
+    counts(counts_)
+{  
     setup_mesh();
 }
 
@@ -19,9 +18,11 @@ BFMesh::~BFMesh()
 	delete[] counts;
 }
 
+
 void BFMesh::draw(Shader shader)
 {
-    std::cout << "counts = " << "\n";
+    //if(this->counts == NULL)
+        //std::cout << counts[2] << "\n";
     // bind appropriate textures
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
@@ -60,6 +61,10 @@ void BFMesh::draw(Shader shader)
 
 void BFMesh::setup_mesh()
 {
+    for (int i = 0; i < 3; i++)
+    {
+        std::cout << counts[i] << "\n";
+    }
     // create buffers/arrays
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);

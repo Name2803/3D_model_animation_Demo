@@ -26,18 +26,21 @@ public:
 	BFMesh** meshes;
 	bool gammaCorrection;
 
-	MainModel(std::string path);
+	MainModel(std::string path, bool set_texture_flip = false);
 	~MainModel();
 
 	void draw(Shader& shader);
+
 
 private:
 	std::string f_path;
 	int mesh_count;
 	void loadModel(std::string path);
 	void processNode(aiNode* node, const aiScene* scene, unsigned int point = 0);
-	void processMesh(BFMesh* bfmesh, aiMesh* mesh, const aiScene* scene);
+	BFMesh* processMesh(aiMesh* mesh, const aiScene* scene);
 	void load_matirial_texture(aiMaterial* mat, aiTextureType type, std::string typeName, int* texture_amount);
 	unsigned int TextureFromFile(const char* path, const std::string& directory);
+	// Рекурсивная функция для подсчета мешей
+	void countMeshes(const aiNode* node, int& meshCount);
 };
 

@@ -1,10 +1,12 @@
 #include "main_model.h"
 #include "basic_file_mesh.h"
 
-MainModel::MainModel(std::string path)
+MainModel::MainModel(std::string path, bool set_texture_flip)
 {
-	stbi_set_flip_vertically_on_load(true);
+    
+	stbi_set_flip_vertically_on_load(set_texture_flip);
 	loadModel(path);
+    mesh_count = 0;
 }
 
 MainModel::~MainModel()
@@ -15,7 +17,9 @@ MainModel::~MainModel()
 
 void MainModel::draw(Shader& shader)
 {
+    
     for (int i = 0; i < mesh_count; ++i)
+        //meshes[i]->printer();
         meshes[i]->draw(shader);
 }
 
@@ -32,8 +36,9 @@ void MainModel::loadModel(std::string path)
     }
     f_path = path.substr(0, path.find_last_of('/'));
     
+    countMeshes(scene->mRootNode, mesh_count);
 
-    meshes = new BFMesh*[scene->mNumMeshes];
+    meshes = new BFMesh*[mesh_count];
     textures_loaded = new Texture[scene->mNumMaterials];
 
     processNode(scene->mRootNode, scene);
@@ -41,21 +46,21 @@ void MainModel::loadModel(std::string path)
 
 void MainModel::processNode(aiNode* node, const aiScene* scene, unsigned int point)
 {
-    mesh_count = node->mNumMeshes;
-    for (unsigned int i = 0; i < node->mNumMeshes; i++)
+    
+    for (unsigned int i = 0; i < node->mNumMeshes; ++i)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        processMesh(meshes[i + point], mesh, scene);
+        meshes[i + point] =  processMesh(mesh, scene);
     }
     
-    for (unsigned int i = 0; i < node->mNumChildren; i++)
+    for (unsigned int i = 0; i < node->mNumChildren; ++i)
     {
         processNode(node->mChildren[i], scene, point + node->mNumMeshes);
     }
 }
 
 
-void MainModel::processMesh(BFMesh* bfmesh, aiMesh* mesh, const aiScene* scene)
+BFMesh* MainModel::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     Vertex* vertices = new Vertex[mesh->mNumVertices];
     unsigned int* indeces;
@@ -117,7 +122,8 @@ void MainModel::processMesh(BFMesh* bfmesh, aiMesh* mesh, const aiScene* scene)
     load_matirial_texture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_SPECULAR, "texture_specular", &counts[2]);
     load_matirial_texture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_HEIGHT, "texture_normal", &counts[2]);
     load_matirial_texture(scene->mMaterials[mesh->mMaterialIndex], aiTextureType_AMBIENT, "texture_height", &counts[2]);
-    bfmesh = new BFMesh(vertices, textures_loaded, indeces, counts);
+   
+    return new BFMesh(vertices, textures_loaded, indeces, counts);
 }
 
 void MainModel::load_matirial_texture(aiMaterial* mat, aiTextureType type, std::string typeName, int* texture_amount)
@@ -187,4 +193,14 @@ unsigned int MainModel::TextureFromFile(const char* path, const std::string& dir
     }
 
     return textureID;
+}
+
+void MainModel::countMeshes(const aiNode* node, int& meshCount)
+{
+    if (node->mNumMeshes > 0) {
+        meshCount += node->mNumMeshes;
+    }
+    for (unsigned int i = 0; i < node->mNumChildren; ++i) {
+        countMeshes(node->mChildren[i], meshCount);
+    }
 }
